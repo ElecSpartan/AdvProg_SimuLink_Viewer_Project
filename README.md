@@ -20,3 +20,12 @@ The aim of this project is to develop a software tool that can read Simulink MDL
 ![image](https://github.com/ElecSpartan/AdvProg_SimuLink_Viewer_Project/assets/112751175/88ff54c6-6c29-4f74-9c12-94748f418588)
 
 ![image](https://github.com/ElecSpartan/AdvProg_SimuLink_Viewer_Project/assets/112751175/295ca66d-aa1a-415c-bcdb-200046976609)
+
+## _Credits:_
+Mazen Saaed Farouk Ahmed 2001080
+Hazem Zainhom Abdel-alim 2000168
+Amgad Shrief abdelrahman 2000121
+Omar Nader Ahmed Gamal El Din Ibrahim 2001714
+
+
+
