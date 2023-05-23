@@ -23,8 +23,11 @@ The aim of this project is to develop a software tool that can read Simulink MDL
 
 ## _Credits:_
 Mazen Saaed Farouk Ahmed 2001080
+
 Hazem Zainhom Abdel-alim 2000168
+
 Amgad Shrief abdelrahman 2000121
+
 Omar Nader Ahmed Gamal El Din Ibrahim 2001714
 
 
