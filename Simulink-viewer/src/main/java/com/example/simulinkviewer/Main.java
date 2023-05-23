@@ -43,7 +43,7 @@ public class Main extends Application {
 
     public static void mdlParsing() throws IOException, ParserConfigurationException, SAXException {
 
-        File file = new File("untitled.mdl");
+        File file = new File("Example.mdl");
         FileInputStream input = new FileInputStream(file);
         StringBuilder mdlFile = new StringBuilder();
         int q;
