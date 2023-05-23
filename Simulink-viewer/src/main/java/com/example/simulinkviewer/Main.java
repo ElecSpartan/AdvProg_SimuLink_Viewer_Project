@@ -1,9 +1,90 @@
 package com.example.simulinkviewer;
-
+import javafx.application.Application;
+import javafx.scene.Group;
+import javafx.scene.Scene;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.shape.Circle;
+import javafx.scene.shape.Line;
+import javafx.scene.shape.Polygon;
+import javafx.stage.Stage;
+import org.w3c.dom.*;
+import org.xml.sax.SAXException;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import java.io.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Scanner;
 public class Main extends Application {
     static private List<Block> blocks = new ArrayList<Block>(); // for the blocks
     static private List<Arrow> connections = new ArrayList<Arrow>(); // for the connections
+    static private Group root = new Group();
+    
+    @Override
+    public void start(Stage stage) throws IOException, ParserConfigurationException, SAXException {
+        Scene scene = new Scene(root, 1500, 790);  // setting the width and height of the window
+        stage.setTitle("Simulink viewer");               // setting title of the window
 
+        Image image = new Image("1.png");
+        ImageView imageView = new ImageView(image);
+        stage.getIcons().add(imageView.getImage());     // setting icon of the program
+        mdlParsing();                                   // parsing the mdl file
+        drawBlocks();
+        drawArrows();
+
+
+        scene.getStylesheets().add(getClass().getResource("style.css").toExternalForm());   // setting the style of the window
+        stage.setScene(scene);
+        mouseEvents(scene, stage);
+        stage.show();   // displaying
+    }
+
+    public static void mdlParsing() throws IOException, ParserConfigurationException, SAXException {
+
+        File file = new File("Example.mdl");
+        FileInputStream input = new FileInputStream(file);
+        StringBuilder mdlFile = new StringBuilder();
+        int q;
+        while ((q = input.read()) != -1) {
+            mdlFile.append((char) q);
+        }
+        String mdlFileS = mdlFile.toString();
+        Scanner scanner = new Scanner(mdlFileS);
+        StringBuilder a = new StringBuilder();
+        String before = "-1";
+        boolean now = false;
+        while (scanner.hasNextLine()) {
+            String line = scanner.nextLine();
+            if (line.equals("<System>")) {
+                now = true;
+            } else if (line.equals("</System>")) {
+                a.append(before + '\n');
+                a.append(line);
+                break;
+            }
+            if (now)
+                a.append(before + '\n');
+            before = line;
+        }
+        String newMdlFile = a.toString();
+        String outputFileName = "neededFile.mdl";
+        FileOutputStream outputStream = new FileOutputStream(outputFileName);
+        outputStream.write(newMdlFile.getBytes());
+
+
+        file = new File("neededFile.mdl");
+        DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+        DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+        Document doc = dBuilder.parse(file);
+        Element rootElement = doc.getDocumentElement();
+        doc.getDocumentElement().normalize();
+
+
+        addBlocks(rootElement, doc);
+        addArrows(rootElement, doc);
+    }
 
 public static void addBlocks(Element rootElement, Document doc) {
         if (rootElement.getTagName().equals("System")) {
@@ -235,5 +316,89 @@ public static void addBlocks(Element rootElement, Document doc) {
             }
         }
         return -1; // Not found
+    }
+    
+      public static void drawBlocks() {
+        for (Block b : blocks) {
+            b.addBlock(root);
+        }
+    }
+    public static void drawArrows() {
+        double arrowSize = 5;
+        for (Arrow a : connections) {
+            Block b;
+            b = getBlock(a.getScrId());
+            double left = b.getLeft();
+            double width = b.getWidth();
+            double startX = left;
+            if (!b.isMirror())
+                startX = left + width;
+            double div = b.getHeight() / (b.getOutputsNum() + 1);
+            double startY = b.getUp() + a.getSrcPlace() * div;
+            Line l = new Line();
+            l.setStartX(startX);
+            l.setStartY(startY);
+            double endX = startX + a.getX();
+            double endY = startY;
+            l.setEndX(endX);
+            l.setEndY(endY);
+            root.getChildren().add(l);
+            startX = endX;
+            startY = endY;
+            double sX = startX;
+            double sY = startY;
+            if (a.getDestsSize() > 1) {
+                Circle c = new Circle(startX, startY, 3);
+                root.getChildren().add(c);
+            }
+
+            for (int i = 0; i < a.getDestsSize(); i++) {
+                endX = startX;
+                endY = startY + a.getY(i);
+                Line l2 = new Line(startX, startY, endX, endY);
+                root.getChildren().add(l2);
+                startX = endX;
+                startY = endY;
+                endY = startY;
+                b = getBlock(a.getDestId(i));
+                endX = b.getLeft();
+                if (b.isMirror())
+                    endX += b.getWidth();
+
+                Line l3 = new Line(startX, startY, endX, endY);
+                root.getChildren().add(l3);
+
+                if (!b.isMirror())
+                    root.getChildren().add(new Polygon(endX, endY, endX - arrowSize, endY + arrowSize, endX - arrowSize, endY - arrowSize));
+                else
+                    root.getChildren().add(new Polygon(endX, endY, endX + arrowSize, endY + arrowSize, endX + arrowSize, endY - arrowSize));
+
+                startX = sX;
+                startY = sY;
+            }
+
+        }
+    }
+
+    public static Block getBlock(int id) {
+        for (Block b : blocks) {
+            if (b.getID() == id)
+                return b;
+        }
+        return null;
+    }
+
+    public static void mouseEvents(Scene scene, Stage stage) {
+        scene.setOnScroll(e -> {
+            double zoomFactor = 1.05;
+            double deltaY = e.getDeltaY();
+
+            if (deltaY < 0) {
+                zoomFactor = 0.95;
+            }
+            root.setScaleX(root.getScaleX() * zoomFactor);
+            root.setScaleY(root.getScaleY() * zoomFactor);
+        });
+
     }
 }
