@@ -4,9 +4,13 @@ The aim of this project is to develop a software tool that can read Simulink MDL
 
 ## _How it works?_
 1- We mainly cared about system XML File so we take the MDL files as a long string and look for the XML file we care for to extract it as a new file.
+
 2- We use DOM Parser to extract the data we need about blocks and lines.
+
 3- We made Arrow and Block Super Classes so each time we find a block or a line we can instantiate objects from them and put them in an ArrayList.
+
 4- We used the ArrayLists to draw and view the model in a user-friendly way.
+
 5- We used CSS file for styling.
 
 
